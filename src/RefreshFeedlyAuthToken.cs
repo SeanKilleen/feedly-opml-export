@@ -8,7 +8,7 @@ namespace FeedlyOpmlExport.Functions
     public static class RefreshFeedlyAuthToken
     {
         [FunctionName("RefreshFeedlyAuthToken")]
-        public static void Run([TimerTrigger("0 0 */4 * * *")]TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 0 */6 * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
