@@ -25,23 +25,21 @@ namespace FeedlyOpmlExport.Functions
         // ReSharper disable once UnusedParameter.Global
         public static async Task Run([TimerTrigger("0 0 */6 * * *")]TimerInfo myTimer, ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-            log.LogInformation($"UserId: {userId}, Refresh token: {refreshToken}");
+            log.LogInformation($"RefreshFeedlyAuthToken function executed at: {DateTime.Now}");
+            log.LogInformation($"UserId: {userId}");
 
             var kv = CreateKeyVaultClient();
 
-            log.LogInformation("Getting access token contents from key vault");
+            log.LogInformation("Getting current access token contents from key vault");
             var accessToken = await kv.GetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", CancellationToken.None);
-            
+
+            log.LogInformation("Getting refreshed access token from Feedly API");
             var feedlyResponse = await RefreshFeedlyAccessToken(accessToken.Value, log);
 
-            log.LogInformation($"TODO Remove -- new Auth token: {feedlyResponse.access_token}, plan: {feedlyResponse.plan}");
-
             log.LogInformation("Setting the secret in the key vault");
-
             await kv.SetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", feedlyResponse.access_token);
 
-            log.LogInformation($"Successfully updated token from {accessToken.Value} to {feedlyResponse.access_token}");
+            log.LogInformation("Successfully updated token in the key vault");
         }
 
         private static async Task<FeedlyRefreshResponse> RefreshFeedlyAccessToken(string accessToken, ILogger log)
