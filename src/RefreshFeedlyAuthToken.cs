@@ -52,7 +52,8 @@ namespace FeedlyOpmlExport.Functions
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
 
-            await kv.SetSecretAsync("https://feedly-export-keyvault.vault.azure.net/secrets", "feedly-access-token", feedlyResponse.access_token);
+            log.LogInformation("Setting the secret in the keyvault");
+            await kv.SetSecretAsync("https://feedly-export-keyvault.vault.azure.net", "feedly-access-token", feedlyResponse.access_token);
 
             log.LogInformation($"Successfully updated token from {accessToken} to {feedlyResponse.access_token}");
         }
