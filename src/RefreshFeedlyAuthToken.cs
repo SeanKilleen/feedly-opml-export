@@ -64,6 +64,16 @@ namespace FeedlyOpmlExport.Functions
 
         }
 
+        public static async Task<string> GetOpmlContents(string accessToken)
+        {
+            var client = CreateFeedlyHttpClient(accessToken);
+
+            var response = await client.GetAsync("opml");
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         private static HttpClient CreateFeedlyHttpClient(string accessToken)
         {
             var client = new HttpClient { BaseAddress = new Uri(FEEDLY_BASE_URL) };
