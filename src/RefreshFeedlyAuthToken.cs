@@ -26,7 +26,7 @@ namespace FeedlyOpmlExport.Functions
             var client = new HttpClient { BaseAddress = new Uri(FEEDLY_BASE_URL) };
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            var request = new FeedlyRefreshRequest(userId, accessToken, refreshToken);
+            var request = new FeedlyRefreshRequest(refreshToken);
             var response = await client.PostAsJsonAsync("auth/token", request);
 
             if (!response.IsSuccessStatusCode)
@@ -49,14 +49,15 @@ namespace FeedlyOpmlExport.Functions
     public class FeedlyRefreshRequest
     {
         public string refresh_token {get;}
-        public string client_id {get;}
-        public string client_secret {get;}
-        public const string grant_type = "refresh_token";
 
-        public FeedlyRefreshRequest(string id, string secret, string refreshToken)
+        // ReSharper disable UnusedMember.Global
+        public const string client_id = "feedlydev";
+        public const string client_secret = "feedlydev";
+        public const string grant_type = "refresh_token";
+        // ReSharper restore UnusedMember.Global
+
+        public FeedlyRefreshRequest(string refreshToken)
         {
-            client_id = id;
-            client_secret = secret;
             refresh_token = refreshToken;
         }        
     }
