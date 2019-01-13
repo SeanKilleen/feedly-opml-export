@@ -5,6 +5,11 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.VisualBasic.CompilerServices;
+using Newtonsoft.Json;
 
 namespace FeedlyOpmlExport.Functions
 {
@@ -39,10 +44,17 @@ namespace FeedlyOpmlExport.Functions
             response.EnsureSuccessStatusCode();
 
             log.LogInformation("Awesome! It worked!");
-            var content = await response.Content.ReadAsStringAsync();
 
-            log.LogInformation("Response content:");
-            log.LogInformation(content);
+            var feedlyResponse = JsonConvert.DeserializeObject<FeedlyRefreshResponse>(await response.Content.ReadAsStringAsync());
+
+            log.LogInformation($"TODO Remove -- new Auth token: {feedlyResponse.access_token}, plan: {feedlyResponse.plan}");
+
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+
+            await kv.SetSecretAsync("https://feedly-export-keyvault.vault.azure.net/secrets", "feedly-access-token", feedlyResponse.access_token);
+
+            log.LogInformation($"Successfully updated token from {accessToken} to {feedlyResponse.access_token}");
         }
     }
 
@@ -61,5 +73,15 @@ namespace FeedlyOpmlExport.Functions
         {
             refresh_token = refreshToken;
         }        
+    }
+
+    public class FeedlyRefreshResponse
+    {
+        public string id { get; set; }
+        public string access_token { get; set; }
+        public long expires_in { get; set; }
+        public string token_type { get; set; }
+        public string plan { get; set; }
+
     }
 }
