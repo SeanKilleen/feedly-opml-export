@@ -30,10 +30,10 @@ namespace FeedlyOpmlExport.Functions
             var opmlDoc = XElement.Parse(opmlXml);
 
             var categories = new List<string> {"development", "tech"};
-            opmlDoc
-                .Descendants("body")
+
+            opmlDoc.Descendants("body")
                 .Descendants("outline")
-                .Where(x=> categories.Contains(x.Attribute("title")?.Value.ToLowerInvariant()))
+                .Where(x=> !categories.Contains(x.Attribute("title")?.Value.ToLowerInvariant()))
                 .Remove();
 
             log.LogInformation("After filtering: ");
