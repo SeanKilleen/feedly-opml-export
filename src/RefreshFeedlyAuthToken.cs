@@ -11,11 +11,11 @@ namespace FeedlyOpmlExport.Functions
     public static class RefreshFeedlyAuthToken
     {
         // These will be read from a settings file, or environment variables, which in production will point to the key vault.
-        public static string userId = System.Environment.GetEnvironmentVariable("feedly-user-id");
-        public static string accessToken = System.Environment.GetEnvironmentVariable("feedly-access-token");
-        public static string refreshToken = System.Environment.GetEnvironmentVariable("feedly-refresh-token");
+        private static readonly string userId = System.Environment.GetEnvironmentVariable("feedly-user-id");
+        private static readonly string accessToken = System.Environment.GetEnvironmentVariable("feedly-access-token");
+        private static readonly string refreshToken = System.Environment.GetEnvironmentVariable("feedly-refresh-token");
 
-        public const string FEEDLY_BASE_URL = "https://cloud.feedly.com/v3/";
+        private const string FEEDLY_BASE_URL = "https://cloud.feedly.com/v3/";
 
         [FunctionName("RefreshFeedlyAuthToken")]
         public static async Task Run([TimerTrigger("0 0 */6 * * *")]TimerInfo myTimer, ILogger log)
@@ -48,13 +48,14 @@ namespace FeedlyOpmlExport.Functions
 
     public class FeedlyRefreshRequest
     {
-        public string refresh_token {get;}
-
         // ReSharper disable UnusedMember.Global
-        public const string client_id = "feedlydev";
-        public const string client_secret = "feedlydev";
-        public const string grant_type = "refresh_token";
+        // ReSharper disable InconsistentNaming
+        private string refresh_token { get; }
+        public string client_id =>  "feedlydev";
+        public string client_secret => "feedlydev";
+        public string grant_type => "refresh_token";
         // ReSharper restore UnusedMember.Global
+        // ReSharper restore InconsistentNaming
 
         public FeedlyRefreshRequest(string refreshToken)
         {
