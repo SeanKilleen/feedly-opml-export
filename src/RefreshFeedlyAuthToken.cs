@@ -18,8 +18,6 @@ namespace FeedlyOpmlExport.Functions
         private static readonly string userId = Environment.GetEnvironmentVariable("feedly-user-id");
         private static readonly string refreshToken = Environment.GetEnvironmentVariable("feedly-refresh-token");
 
-        private const string FEEDLY_BASE_URL = "https://cloud.feedly.com/v3/";
-        private const string KEY_VAULT_BASE_URL = "https://feedly-export-keyvault.vault.azure.net";
 
         [FunctionName("RefreshFeedlyAuthToken")]
         // ReSharper disable once UnusedParameter.Global
@@ -28,21 +26,25 @@ namespace FeedlyOpmlExport.Functions
             log.LogInformation($"RefreshFeedlyAuthToken function executed at: {DateTime.Now}");
             log.LogInformation($"UserId: {userId}");
 
-            var kv = CreateKeyVaultClient();
-
             log.LogInformation("Getting current access token contents from key vault");
-            var accessToken = await kv.GetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", CancellationToken.None);
+            var accessToken = await KeyVaultManager.GetFeedlyAccessToken();
 
             log.LogInformation("Getting refreshed access token from Feedly API");
-            var feedlyResponse = await RefreshFeedlyAccessToken(accessToken.Value, log);
+            var feedlyResponse = await FeedlyManager.RefreshFeedlyAccessToken(accessToken, log, refreshToken);
 
             log.LogInformation("Setting the secret in the key vault");
-            await kv.SetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", feedlyResponse.access_token);
+            await KeyVaultManager.UpdateFeedlyAccessToken(feedlyResponse.access_token);
 
             log.LogInformation("Successfully updated token in the key vault");
         }
 
-        private static async Task<FeedlyRefreshResponse> RefreshFeedlyAccessToken(string accessToken, ILogger log)
+    }
+
+    public static class FeedlyManager
+    {
+        private const string FEEDLY_BASE_URL = "https://cloud.feedly.com/v3/";
+
+        public static async Task<FeedlyRefreshResponse> RefreshFeedlyAccessToken(string accessToken, ILogger log, string refreshToken)
         {
             var client = CreateFeedlyHttpClient(accessToken);
 
@@ -58,24 +60,42 @@ namespace FeedlyOpmlExport.Functions
 
             response.EnsureSuccessStatusCode();
 
-            log.LogInformation("Awesome! It worked!");
-
             return JsonConvert.DeserializeObject<FeedlyRefreshResponse>(await response.Content.ReadAsStringAsync());
 
         }
+
         private static HttpClient CreateFeedlyHttpClient(string accessToken)
         {
-            var client = new HttpClient {BaseAddress = new Uri(FEEDLY_BASE_URL)};
+            var client = new HttpClient { BaseAddress = new Uri(FEEDLY_BASE_URL) };
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             return client;
         }
 
+    }
+
+    public static class KeyVaultManager
+    {
+        private const string KEY_VAULT_BASE_URL = "https://feedly-export-keyvault.vault.azure.net";
+        private const string ACCESS_TOKEN_KEY_NAME = "feedly-access-token";
+
+        private static KeyVaultClient theClient = CreateKeyVaultClient();
+
+        public static async Task<string> GetFeedlyAccessToken()
+        {
+            var accessToken = await theClient.GetSecretAsync(KEY_VAULT_BASE_URL, ACCESS_TOKEN_KEY_NAME, CancellationToken.None);
+            return accessToken.Value;
+        }
         private static KeyVaultClient CreateKeyVaultClient()
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
 
             return new KeyVaultClient(authenticationCallback);
+        }
+
+        public static async Task UpdateFeedlyAccessToken(string feedlyResponseAccessToken)
+        {
+            await theClient.SetSecretAsync(KEY_VAULT_BASE_URL, ACCESS_TOKEN_KEY_NAME, feedlyResponseAccessToken);
         }
     }
 
