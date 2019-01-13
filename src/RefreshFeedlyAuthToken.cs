@@ -50,7 +50,7 @@ namespace FeedlyOpmlExport.Functions
     {
         // ReSharper disable UnusedMember.Global
         // ReSharper disable InconsistentNaming
-        private string refresh_token { get; }
+        public string refresh_token { get; }
         public string client_id =>  "feedlydev";
         public string client_secret => "feedlydev";
         public string grant_type => "refresh_token";
