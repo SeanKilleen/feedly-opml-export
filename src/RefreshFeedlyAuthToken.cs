@@ -29,6 +29,13 @@ namespace FeedlyOpmlExport.Functions
             var request = new FeedlyRefreshRequest(userId, accessToken, refreshToken);
             var response = await client.PostAsJsonAsync("auth/token", request);
 
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                log.LogWarning($"Response failed. Status {response.StatusCode}, Reason {response.ReasonPhrase}");
+                log.LogWarning($"Error content: {errorContent}");
+            }
+
             response.EnsureSuccessStatusCode();
 
             log.LogInformation("Awesome! It worked!");
