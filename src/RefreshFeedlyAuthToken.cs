@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
@@ -21,6 +22,7 @@ namespace FeedlyOpmlExport.Functions
         private static readonly string refreshToken = System.Environment.GetEnvironmentVariable("feedly-refresh-token");
 
         private const string FEEDLY_BASE_URL = "https://cloud.feedly.com/v3/";
+        private const string KEY_VAULT_BASE_URL = "https://feedly-export-keyvault.vault.azure.net";
 
         [FunctionName("RefreshFeedlyAuthToken")]
         public static async Task Run([TimerTrigger("0 0 */6 * * *")]TimerInfo myTimer, ILogger log)
@@ -28,14 +30,25 @@ namespace FeedlyOpmlExport.Functions
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
             log.LogInformation($"UserId: {userId}, Refresh token: {refreshToken}");
 
-            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-            
+            var kv = CreateKeyVaultClient();
+
             log.LogInformation("Getting access token contents from keyvault");
-            var accessToken = await kv.GetSecretAsync("https://feedly-export-keyvault.vault.azure.net", "feedly-access-token", CancellationToken.None);
+            var accessToken = await kv.GetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", CancellationToken.None);
             
-            var client = new HttpClient { BaseAddress = new Uri(FEEDLY_BASE_URL) };
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Value);
+            var feedlyResponse = await RefreshFeedlyAccessToken(accessToken.Value, refreshToken, log);
+
+            log.LogInformation($"TODO Remove -- new Auth token: {feedlyResponse.access_token}, plan: {feedlyResponse.plan}");
+
+            log.LogInformation("Setting the secret in the keyvault");
+
+            await kv.SetSecretAsync(KEY_VAULT_BASE_URL, "feedly-access-token", feedlyResponse.access_token);
+
+            log.LogInformation($"Successfully updated token from {accessToken.Value} to {feedlyResponse.access_token}");
+        }
+
+        private static async Task<FeedlyRefreshResponse> RefreshFeedlyAccessToken(string accessToken, string refreshToken, ILogger log)
+        {
+            var client = CreateFeedlyHttpClient(accessToken);
 
             var request = new FeedlyRefreshRequest(refreshToken);
             var response = await client.PostAsJsonAsync("auth/token", request);
@@ -51,14 +64,22 @@ namespace FeedlyOpmlExport.Functions
 
             log.LogInformation("Awesome! It worked!");
 
-            var feedlyResponse = JsonConvert.DeserializeObject<FeedlyRefreshResponse>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<FeedlyRefreshResponse>(await response.Content.ReadAsStringAsync());
 
-            log.LogInformation($"TODO Remove -- new Auth token: {feedlyResponse.access_token}, plan: {feedlyResponse.plan}");
+        }
+        private static HttpClient CreateFeedlyHttpClient(string accessToken)
+        {
+            var client = new HttpClient {BaseAddress = new Uri(FEEDLY_BASE_URL)};
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            return client;
+        }
 
-            log.LogInformation("Setting the secret in the keyvault");
-            await kv.SetSecretAsync("https://feedly-export-keyvault.vault.azure.net", "feedly-access-token", feedlyResponse.access_token);
+        private static KeyVaultClient CreateKeyVaultClient()
+        {
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
 
-            log.LogInformation($"Successfully updated token from {accessToken.Value} to {feedlyResponse.access_token}");
+            return new KeyVaultClient(authenticationCallback);
         }
     }
 
