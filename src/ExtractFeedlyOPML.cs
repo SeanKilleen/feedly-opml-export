@@ -41,12 +41,13 @@ namespace FeedlyOpmlExport.Functions
         {
             var opmlDoc = XElement.Parse(opmlXml);
 
-            opmlDoc.Descendants("body")
-                .DescendantNodes()
+            opmlDoc.Descendants("body").DescendantNodes()
                 .Where(x =>
                 {
                     var containerized = (XElement)x;
-                    return !categories.Contains(containerized.Attribute("title")?.Value.ToLowerInvariant());
+
+                    return x.Parent.Name == "body"
+                           && !categories.Contains(containerized.Attribute(XName.Get("title"))?.Value.ToLowerInvariant());
                 })
                 .Remove();
 
