@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -43,49 +41,6 @@ namespace FeedlyOpmlExport.Functions
             await blobOutput.WriteAsync(thing, 0, thing.Length);
 
             log.LogInformation("Done!");
-        }
-    }
-
-    public static class OpmlLabeler
-    {
-        public static string LabelOpmlFile(string opmlXml)
-        {
-            var opmlDoc = XElement.Parse(opmlXml);
-
-            var firstLevelChildren = opmlDoc.DescendantNodes().Where(x => x.Parent.Name == "body");
-
-            foreach (var child in firstLevelChildren)
-            {
-                var containerized = (XElement)child;
-
-                var titleAttribute = containerized.Attribute(XName.Get("title"));
-                titleAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
-
-                var textAttribute = containerized.Attribute(XName.Get("text"));
-                textAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
-            }
-
-            return opmlDoc.ToString();
-        }
-    }
-
-    public static class OpmlFilterer
-    {
-        public static string FilterToCategories(string opmlXml, List<string> categories)
-        {
-            var opmlDoc = XElement.Parse(opmlXml);
-
-            opmlDoc.Descendants("body").DescendantNodes()
-                .Where(x =>
-                {
-                    var containerized = (XElement)x;
-
-                    return x.Parent.Name == "body"
-                           && !categories.Contains(containerized.Attribute(XName.Get("title"))?.Value.ToLowerInvariant());
-                })
-                .Remove();
-
-            return opmlDoc.ToString();
         }
     }
 }
