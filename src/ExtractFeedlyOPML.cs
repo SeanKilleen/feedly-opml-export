@@ -20,7 +20,7 @@ namespace FeedlyOpmlExport.Functions
         public static async Task Run(
             [TimerTrigger("0 0 5 * * *")]TimerInfo myTimer
             , ILogger log
-            , [Blob("opml-file/SeanKilleenBlogs.opml", FileAccess.Write)] Stream blobOutput)
+            , [Blob("opml-file/SeanKilleenBlogs.opml", FileAccess.Write)] string blobOutput)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -36,6 +36,9 @@ namespace FeedlyOpmlExport.Functions
 
             log.LogInformation("After filtering: ");
             log.LogInformation(output);
+
+            // ReSharper disable once RedundantAssignment -- this is written to the blob
+            blobOutput = output;
         }
     }
 
