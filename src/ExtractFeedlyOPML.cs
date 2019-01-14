@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -16,7 +17,10 @@ namespace FeedlyOpmlExport.Functions
         /// <param name="myTimer">Runs at 5am every day. 5am is a nice time of day.</param>
         /// <param name="log"></param>
         [FunctionName("ExtractFeedlyOPML")]
-        public static async Task Run([TimerTrigger("0 0 5 * * *")]TimerInfo myTimer, ILogger log)
+        public static async Task Run(
+            [TimerTrigger("0 0 5 * * *")]TimerInfo myTimer
+            , ILogger log
+            , [Blob("opml-file/SeanKilleenBlogs.opml", FileAccess.Write)] Stream blobOutput)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
