@@ -33,16 +33,43 @@ namespace FeedlyOpmlExport.Functions
             log.LogDebug(opmlXml);
 
             var categories = new List<string> { "development", "tech" };
-            var output = OpmlFilterer.FilterToCategories(opmlXml, categories);
+            var filteredDoc = OpmlFilterer.FilterToCategories(opmlXml, categories);
 
             log.LogInformation("After filtering: ");
-            log.LogInformation(output);
+            log.LogInformation(filteredDoc);
+
+            var filterAndLabeledDoc = OpmlLabeler.LabelOpmlFile(filteredDoc);
+            log.LogInformation("After labeling: ");
+            log.LogInformation(filterAndLabeledDoc);
 
             log.LogInformation("Saving to the blob");
-            var thing = Encoding.Default.GetBytes(output);
+            var thing = Encoding.Default.GetBytes(filterAndLabeledDoc);
             await blobOutput.WriteAsync(thing, 0, thing.Length);
 
             log.LogInformation("Done!");
+        }
+    }
+
+    public static class OpmlLabeler
+    {
+        public static string LabelOpmlFile(string opmlXml)
+        {
+            var opmlDoc = XElement.Parse(opmlXml);
+
+            var firstLevelChildren = opmlDoc.DescendantNodes().Where(x => x.Parent.Name == "body");
+
+            foreach (var child in firstLevelChildren)
+            {
+                var containerized = (XElement)child;
+
+                var titleAttribute = containerized.Attribute(XName.Get("title"));
+                titleAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
+
+                var textAttribute = containerized.Attribute(XName.Get("text"));
+                textAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
+            }
+
+            return opmlDoc.ToString();
         }
     }
 
