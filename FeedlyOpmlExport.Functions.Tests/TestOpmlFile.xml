@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Sean subscriptions in feedly Cloud</title>
+  </head>
+  <body>
+    <outline text="Google" title="Google">
+      <outline type="rss" text="Docs Blog" title="Docs Blog" xmlUrl="http://googledocs.blogspot.com/feeds/posts/default" htmlUrl="https://www.blog.google/products/docs/"/>
+      <outline type="rss" text="Google Apps Developer Blog" title="Google Apps Developer Blog" xmlUrl="http://googleappsdeveloper.blogspot.com/feeds/posts/default" htmlUrl="http://gsuite-developers.googleblog.com/"/>
+    </outline>
+    <outline text="Mine" title="Mine">
+      <outline type="rss" text="SeanKilleen.com Feed" title="SeanKilleen.com Feed" xmlUrl="http://SeanKilleen.com/feed.xml" htmlUrl="https://seankilleen.com/"/>
+    </outline>
+    <outline text="Development" title="Development">
+      <outline type="rss" text="Scott Hanselman" title="Scott Hanselman" xmlUrl="http://feeds.feedburner.com/ScottHanselman" htmlUrl="https://www.hanselman.com/blog/"/>
+      <outline type="rss" text="The Continuous Improver" title="The Continuous Improver" xmlUrl="https://www.continuousimprover.com/feed.xml" htmlUrl="https://www.continuousimprover.com/"/>
+      <outline type="rss" text="you've been HAACKED" title="you've been HAACKED" xmlUrl="http://feeds.haacked.com/haacked" htmlUrl="https://haacked.com/"/>
+    </outline>
+    <outline text="Tech" title="Tech">
+      <outline type="rss" text="Gizmodo" title="Gizmodo" xmlUrl="http://gizmodo.com/vip.xml" htmlUrl="https://gizmodo.com"/>
+      <outline type="rss" text="Tech Talk DC" title="Tech Talk DC" xmlUrl="http://www.techtalkdc.com/rss/" htmlUrl="https://techtalkdc.com/"/>
+    </outline>
+  </body>
+</opml>
