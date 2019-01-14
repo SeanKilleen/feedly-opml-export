@@ -28,10 +28,6 @@ namespace FeedlyOpmlExport.Functions
             var accessToken = await KeyVaultManager.GetFeedlyAccessToken();
             var opmlXml = await FeedlyManager.GetOpmlContents(accessToken);
 
-            //TODO Remove
-            log.LogDebug("Full XML:");
-            log.LogDebug(opmlXml);
-
             var categories = new List<string> { "development", "tech" };
             var filteredDoc = OpmlFilterer.FilterToCategories(opmlXml, categories);
 
