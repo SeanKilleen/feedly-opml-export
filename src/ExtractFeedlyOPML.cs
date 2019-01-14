@@ -27,21 +27,30 @@ namespace FeedlyOpmlExport.Functions
             log.LogDebug("Full XML:");
             log.LogDebug(opmlXml);
 
-            var opmlDoc = XElement.Parse(opmlXml);
+            var categories = new List<string> { "development", "tech" };
+            var output = OpmlFilterer.FilterToCategories(opmlXml, categories);
 
-            var categories = new List<string> {"development", "tech"};
+            log.LogInformation("After filtering: ");
+            log.LogInformation(output);
+        }
+    }
+
+    public static class OpmlFilterer
+    {
+        public static string FilterToCategories(string opmlXml, List<string> categories)
+        {
+            var opmlDoc = XElement.Parse(opmlXml);
 
             opmlDoc.Descendants("body")
                 .DescendantNodes()
                 .Where(x =>
                 {
-                    var containerized = (XElement) x;
+                    var containerized = (XElement)x;
                     return !categories.Contains(containerized.Attribute("title")?.Value.ToLowerInvariant());
                 })
                 .Remove();
 
-            log.LogInformation("After filtering: ");
-            log.LogInformation(opmlDoc.ToString());
+            return opmlDoc.ToString();
         }
     }
 }
