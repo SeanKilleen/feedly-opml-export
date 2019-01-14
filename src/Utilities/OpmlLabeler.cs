@@ -19,7 +19,7 @@ namespace FeedlyOpmlExport.Functions
                 titleAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
 
                 var textAttribute = containerized.Attribute(XName.Get("text"));
-                textAttribute.SetValue(titleAttribute.Value + " - via Sean Killeen");
+                textAttribute.SetValue(textAttribute.Value + " - via Sean Killeen");
             }
 
             return opmlDoc.ToString();
