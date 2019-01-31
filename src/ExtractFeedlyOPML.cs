@@ -26,7 +26,7 @@ namespace FeedlyOpmlExport.Functions
             var accessToken = await KeyVaultManager.GetFeedlyAccessToken();
             var opmlXml = await FeedlyManager.GetOpmlContents(accessToken);
 
-            var categories = new List<string> { "development", "tech" };
+            var categories = new List<string> { "development", "tech", "development - discover.net" };
             var filteredDoc = OpmlFilterer.FilterToCategories(opmlXml, categories);
 
             log.LogInformation("After filtering: ");
