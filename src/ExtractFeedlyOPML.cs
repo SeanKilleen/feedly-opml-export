@@ -40,7 +40,7 @@ namespace FeedlyOpmlExport.Functions
             var thing = Encoding.Default.GetBytes(filterAndLabeledDoc);
             await blobOutput.WriteAsync(thing, 0, thing.Length);
 
-            log.LogInformation("Done!");
+            log.LogInformation("Finished!");
         }
     }
 }
