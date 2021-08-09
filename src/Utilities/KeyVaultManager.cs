@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 
-namespace FeedlyOpmlExport.Functions
+namespace FeedlyOpmlExport.Functions.Utilities
 {
     public static class KeyVaultManager
     {
