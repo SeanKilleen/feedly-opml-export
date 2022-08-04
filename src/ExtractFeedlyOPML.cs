@@ -16,6 +16,7 @@ namespace FeedlyOpmlExport.Functions
         /// </summary>
         /// <param name="myTimer">Runs at 5am every day. 5am is a nice time of day.</param>
         /// <param name="log"></param>
+        /// <param name="blobOutput">The output stream that we'll use to write the file.</param>
         [FunctionName("ExtractFeedlyOPML")]
         public static async Task Run(
             [TimerTrigger("0 0 5 * * *")]TimerInfo myTimer
