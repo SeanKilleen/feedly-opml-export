@@ -1,0 +1,27 @@
+name: "Build / Test"
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-code:
+    name: "C# Code"
+    runs-on: ubuntu-latest
+    env:
+      SOLUTION_LOCATION: "./src/FeedlyOpmlExport.Functions.sln"
+    steps:
+      - uses: actions/checkout@v2
+        name: Pull the code
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.x
+      - name: Restore dependencies
+        run: dotnet restore $SOLUTION_LOCATION
+      - name: Build
+        run: dotnet build --no-restore $SOLUTION_LOCATION
+      - name: Test
+        run: dotnet test --no-build --verbosity normal $SOLUTION_LOCATION
