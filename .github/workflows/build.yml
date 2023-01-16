@@ -11,7 +11,7 @@ jobs:
     name: "C# Code"
     runs-on: ubuntu-latest
     env:
-      SOLUTION_LOCATION: "./src/FeedlyOpmlExport.Functions.sln"
+      SOLUTION_LOCATION: "./src/FeedlyOpmlExport.sln"
     steps:
       - uses: actions/checkout@v2
         name: Pull the code
